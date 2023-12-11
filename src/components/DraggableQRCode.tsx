@@ -12,8 +12,6 @@ interface DraggableQRCodeProps {
   setPositionY: (position: number) => void
 }
 
-// ...
-
 const DraggableQRCode: React.FC<DraggableQRCodeProps> = ({ backgroundImageSrc, setPositionX, setPositionY }) => {
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [isDragging, setIsDragging] = useState<boolean>(false);
