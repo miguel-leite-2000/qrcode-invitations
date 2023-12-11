@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import QRCode from 'qrcode.react';
 
+interface Position {
+  x: number;
+  y: number;
+}
 interface DraggableQRCodeProps {
   backgroundImageSrc: string;
+  setPositionX: (position: number) => void
+  setPositionY: (position: number) => void
 }
 
-const DraggableQRCode: React.FC<DraggableQRCodeProps> = ({ backgroundImageSrc }) => {
+// ...
+
+const DraggableQRCode: React.FC<DraggableQRCodeProps> = ({ backgroundImageSrc, setPositionX, setPositionY }) => {
   const [qrCodeData, setQrCodeData] = useState<string>('');
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [position, setPosition] = useState<Position | null>(null);
 
   const handleStart = () => {
     setIsDragging(true);
@@ -20,29 +29,40 @@ const DraggableQRCode: React.FC<DraggableQRCodeProps> = ({ backgroundImageSrc })
 
   const handleDrag = (e: any, data: any) => {
     if (isDragging) {
-      // Aqui, você pode acessar as informações de posicionamento durante o arrastar
-      console.log('Posição:', { x: data.x, y: data.y });
+      setPositionX(data.x);
+      setPositionY(data.y);
     }
   };
 
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Este é o seu convite ou imagem de fundo */}
-      <img src={backgroundImageSrc} alt="Convite" style={{ width: 'auto', height: 'auto' }} />
+  useEffect(() => {
+    const getPosition = localStorage.getItem('@tutondeleinvite');
+    if (getPosition) {
+      const newPosition = JSON.parse(getPosition) as Position;
+      setPosition(newPosition);
+    } else {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, []);
 
-      {/* Este é o seu QR Code arrastável */}
-      <Draggable
-        defaultPosition={{ x: 0, y: 0 }}
-        onStart={handleStart}
-        onStop={handleStop}
-        onDrag={handleDrag}
-      >
-        <div style={{ position: 'absolute', top: 0, left: 0 }}>
-          <QRCode value={qrCodeData} size={100} />
+
+  return (
+    <>
+      {position && (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <img src={backgroundImageSrc} alt="Convite" style={{ width: 'auto', height: 'auto' }} />
+          <Draggable
+            defaultPosition={{ x: position.x, y: position.y }}
+            onStart={handleStart}
+            onStop={handleStop}
+            onDrag={handleDrag}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+              <QRCode value={qrCodeData} size={100} />
+            </div>
+          </Draggable>
         </div>
-      </Draggable>
-    </div>
+      )}
+    </>
   );
 };
-
 export default DraggableQRCode;
